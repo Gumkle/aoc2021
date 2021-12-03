@@ -3,15 +3,16 @@ package commons
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 )
 
-type fileHandler struct {
-	ch  chan string
-	scn *bufio.Scanner
+type FileHandler struct {
+	scn  *bufio.Scanner
+	file *os.File
 }
 
-func NewHandler(path string) *fileHandler {
+func NewHandler(path string) *FileHandler {
 	file, err := os.Open(path)
 	if err != nil {
 		fmt.Println("Error opening file")
@@ -19,13 +20,13 @@ func NewHandler(path string) *fileHandler {
 	}
 	scanner := bufio.NewScanner(file)
 
-	return &fileHandler{
-		ch:  make(chan string),
-		scn: scanner,
+	return &FileHandler{
+		scn:  scanner,
+		file: file,
 	}
 }
 
-func (fh *fileHandler) ReadLine() (string, bool) {
+func (fh *FileHandler) ReadLine() (string, bool) {
 	if fh.scn.Scan() {
 		return fh.scn.Text(), true
 	} else {
@@ -33,13 +34,14 @@ func (fh *fileHandler) ReadLine() (string, bool) {
 	}
 }
 
-func (fh *fileHandler) ForEachLine(callback func(string)) {
+func (fh *FileHandler) ForEachLine(callback func(string)) {
+	fh.file.Seek(0, io.SeekStart)
 	for text, ok := fh.ReadLine(); ok; text, ok = fh.ReadLine() {
 		callback(text)
 	}
 }
 
-func (fh *fileHandler) ForEachLineWithoutBlanks(callback func(string)) {
+func (fh *FileHandler) ForEachLineWithoutBlanks(callback func(string)) {
 	fh.ForEachLine(func(s string) {
 		if s == "" {
 			return
