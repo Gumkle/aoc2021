@@ -3,7 +3,6 @@ package commons
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"os"
 )
 
@@ -35,7 +34,6 @@ func (fh *FileHandler) ReadLine() (string, bool) {
 }
 
 func (fh *FileHandler) ForEachLine(callback func(string)) {
-	fh.file.Seek(0, io.SeekStart)
 	for text, ok := fh.ReadLine(); ok; text, ok = fh.ReadLine() {
 		callback(text)
 	}
@@ -48,4 +46,8 @@ func (fh *FileHandler) ForEachLineWithoutBlanks(callback func(string)) {
 		}
 		callback(s)
 	})
+}
+
+func (fh *FileHandler) MovePointer(distance int64, relative int) {
+	fh.file.Seek(distance, relative)
 }
